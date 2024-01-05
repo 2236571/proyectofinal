@@ -1,5 +1,5 @@
 #Libreria para el uso de Flask
-from flask import Flask, render_template
+from flask import Flask, render_template, request , url_for, redirect
 
 #libreria para el uso de la base de datos 
 from flask_sqlalchemy import SQLAlchemy
@@ -23,10 +23,17 @@ with app.app_context():
     db.create_all()
 
 #rutas
-@app.route("/",methods=['get','post'])
+@app.route("/",methods=['GET','POST'])
 def home():
-    if 
-    return render_template("select.html") 
+    if request.method == 'POST' :
+        name = request.form.get('name')
+        if name:
+            obj=Todo(name=name)
+            db.session.add(obj)
+            db.session.commit()
+            #return f'Agregado{name}'
+    py_lista_tareas =Todo.query.all()   
+    return render_template('select.html',lista_tareas=py_lista_tareas) 
 
 @app.route("/insert")
 def insert(): 
@@ -35,12 +42,20 @@ def insert():
 
 @app.route("/update/<id>")
 def update(id):
-    return f'hola esto es una prueba para modificar el id {id}'
+    obj=Todo.query.filter_by(id=id).first()
+    obj.state=True
+    db.session.update(obj)
+    db.session.commit()
+    return redirect(url_for('home'))
+
 
 
 @app.route("/delete/<id>")
 def delete(id):
-    return f'hola esto es una pruebapara elimimar en id {id}'
+    obj= Todo.query.filter_by(id=id).first()
+    db.session.delete(obj)
+    db.session.commit()
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)
